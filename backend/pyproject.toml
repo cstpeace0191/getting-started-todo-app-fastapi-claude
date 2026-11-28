@@ -11,3 +11,22 @@ dependencies = [
     "fastapi>=0.163.1",
     "uvicorn>=0.54.0",
 ]
+
+# ---------------------------------------------------------------------------
+# CI 검사 설정 (.github/workflows/ci.yml 의 backend job 이 이 설정을 그대로 씀)
+# ---------------------------------------------------------------------------
+[tool.ruff]
+target-version = "py313"          # CI 매트릭스의 최저 버전 (3.13 · 3.14)
+extend-exclude = ["src/static"]   # 빌드된 React 결과물
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]  # ruff 기본 규칙 (문법 · 미사용 import · 미정의 이름)
+
+[tool.ruff.lint.per-file-ignores]
+"main.py" = ["F401"]       # uvicorn 실행용으로 src.main.app 을 다시 내보냄
+"src/main.py" = ["E402"]   # mimetypes 등록 뒤에 라우터 import (의도된 순서)
+"spec/**" = ["F841"]       # patch(...) as mock_get: 대체만 하고 호출 검증은 안 함
+
+[tool.coverage.run]
+source = ["src"]
+omit = ["src/persistence/postgres.py"]   # 실제 PostgreSQL 이 필요 → 단위 테스트 범위 밖 (CI 는 SQLite)
